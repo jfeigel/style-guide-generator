@@ -2,12 +2,12 @@
   "site": {
     "port": 5000,
     "name": "Style Guide Generator",
-    "secret": "styling-your-way-to-the-future",
+    "secret": "a-super-secret-passphrase",
     "oauth": {
       "host": "http://127.0.0.1",
       "github": {
-        "clientID": "52544e28de054315a2f0",
-        "clientSecret": "84053969506a4337a3aac48c8d11ddcabd4d8259"
+        "clientID": "GITHUB-CLIENT-ID",
+        "clientSecret": "GITHUB-CLIENT-SECRET"
       }
     },
     "analytics": "UA-00000000-0"

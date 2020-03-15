@@ -12,9 +12,10 @@
   },
   "license": "gpl-3.0",
   "scripts": {
-    "start": "concurrently --kill-others -p [{name}] -n \"KOA,REACT\" -c \"black.bgWhite.bold,black.bgCyan.bold\" \"yarn run koa\" \"yarn run react\"",
-    "koa": "./node_modules/.bin/nodemon --watch server -e js server/index.js",
-    "react": "react-scripts start",
+    "start": "concurrently --kill-others -p [{name}] -n \"KOA,REACT\" -c \"black.bgWhite.bold,black.bgCyan.bold\" \"yarn run be\" \"yarn run fe\"",
+    "be": "./node_modules/.bin/nodemon --watch server -e js server/index.js",
+    "fe": "react-scripts start",
+    "mongo": "screen -dmS mongodb bash -c 'mongod --dbpath=/data'",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -23,8 +24,10 @@
     "@koa/cors": "^3.0.0",
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.45",
     "axios": "^0.19.2",
     "bcrypt": "^4.0.1",
+    "bcryptjs": "^2.4.3",
     "clsx": "^1.1.0",
     "history": "^4.10.1",
     "koa": "^2.11.0",
@@ -36,6 +39,7 @@
     "koa-router": "^8.0.8",
     "koa-session": "^5.13.1",
     "koa-static": "^5.0.0",
+    "mongodb": "^3.5.5",
     "passport": "^0.4.1",
     "passport-github": "^1.1.0",
     "passport-local": "^1.0.0",
@@ -44,28 +48,24 @@
     "react-ga": "^2.7.0",
     "react-router-dom": "^5.1.2",
     "redis": "^3.0.2",
-    "redis-commands": "^1.5.0"
+    "redis-commands": "^1.5.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
-    "@types/jest": "^24.0.0",
-    "@types/node": "^12.0.0",
-    "@types/react": "^16.9.0",
-    "@types/react-dom": "^16.9.0",
-    "@types/react-router-dom": "^5.1.3",
-    "@typescript-eslint/eslint-plugin": "^2.23.0",
-    "@typescript-eslint/parser": "^2.23.0",
     "concurrently": "^5.1.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^2.5.0",
     "nodemon": "^2.0.2",
     "prettier": "^1.19.1",
-    "react-scripts": "3.4.0",
-    "typescript": "~3.7.2"
+    "react-scripts": "3.4.0"
   },
   "eslintConfig": {
     "extends": "react-app"

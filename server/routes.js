@@ -1,5 +1,4 @@
-const app = require('./index').app;
-const passport = require('./index').passport;
+const { app, passport } = require('./index');
 const Router = require('koa-router');
 const fs = require('fs');
 
@@ -34,7 +33,6 @@ router.post('/auth/login', ctx =>
       ctx.throw(401, err);
     } else {
       await ctx.login(user);
-      delete user.password;
       ctx.body = user;
     }
   })(ctx)

@@ -4,11 +4,15 @@
     "name": "Style Guide Generator",
     "secret": "a-super-secret-passphrase",
     "oauth": {
-      "host": "http://127.0.0.1",
+      "host": "http://localhost",
       "github": {
         "clientID": "GITHUB-CLIENT-ID",
         "clientSecret": "GITHUB-CLIENT-SECRET"
       }
+    },
+    "db": {
+      "url": "http://localhost:27017",
+      "name": "sgg"
     }
   }
 }

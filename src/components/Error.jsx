@@ -1,17 +1,15 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { createStyles, makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    title: {
-      textAlign: 'center'
-    }
-  })
-);
+const useStyles = makeStyles(() => ({
+  title: {
+    textAlign: 'center'
+  }
+}));
 
-function Error(): JSX.Element {
+function Error() {
   const classes = useStyles();
   const location = useLocation();
 

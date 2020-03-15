@@ -1,4 +1,5 @@
 const config = require('./config');
+const logger = require('./logger');
 
 const Koa = require('koa');
 const cors = require('@koa/cors');
@@ -16,10 +17,13 @@ app.use(
   })
 );
 
-exports.app = app;
-exports.passport = passport;
+module.exports = {
+  app: app,
+  logger: logger,
+  passport: passport
+};
 
-// require('./models/auth');
+require('./models/auth');
 
 app.proxy = true;
 
@@ -58,10 +62,14 @@ app.use(async (ctx, next) => {
 
 require('./routes');
 
-console.log(
+logger.info(
   `${config.site.name} is now listening on port ${config.site.port}.`
 );
 app.listen(config.site.port);
+
+app.on('error', (err, ctx) => {
+  logger.error(`${ctx && ctx.status && `${ctx.status} | `}${err}`);
+});
 
 process.on('SIGINT', function exit() {
   process.exit();

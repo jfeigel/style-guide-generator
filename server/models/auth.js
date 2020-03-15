@@ -1,5 +1,10 @@
-const passport = require('../index').passport;
 const config = require('../config.json');
+
+const { logger, passport } = require('../index');
+const LocalStrategy = require('passport-local').Strategy;
+const GitHubStrategy = require('passport-github').Strategy;
+
+const User = require('./user');
 
 let port = '';
 if (config.site.port !== 80) {
@@ -7,14 +12,27 @@ if (config.site.port !== 80) {
 }
 
 passport.serializeUser((user, done) => {
-  done(null, user);
+  done(null, User.clean(user));
 });
 
 passport.deserializeUser((user, done) => {
-  done(null, user);
+  done(null, User.clean(user));
 });
 
-const GitHubStrategy = require('passport-github').Strategy;
+passport.use(
+  new LocalStrategy((username, password, done) => {
+    try {
+      const result = User.authenticate(username, password);
+      if (!result.user) return done(null, false, result.message);
+    } catch (err) {
+      logger.error(err.stack);
+      return done(err);
+    }
+
+    return done(null, user);
+  })
+);
+
 passport.use(
   new GitHubStrategy(
     {

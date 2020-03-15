@@ -9,7 +9,6 @@
         "clientID": "GITHUB-CLIENT-ID",
         "clientSecret": "GITHUB-CLIENT-SECRET"
       }
-    },
-    "analytics": "UA-00000000-0"
+    }
   }
 }

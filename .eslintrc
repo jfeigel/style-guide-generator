@@ -86,7 +86,9 @@
       ],
       "parser": "@typescript-eslint/parser",
       "rules": {
-        "no-use-before-define": [2, "nofunc"]
+        "@typescript-eslint/interface-name-prefix": "always",
+        "no-use-before-define": [2, "nofunc"],
+        "react/prop-types": [0]
       }
     }
   ]

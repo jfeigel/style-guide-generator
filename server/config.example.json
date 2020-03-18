@@ -8,10 +8,14 @@
       "github": {
         "clientID": "GITHUB-CLIENT-ID",
         "clientSecret": "GITHUB-CLIENT-SECRET"
+      },
+      "google": {
+        "clientID": "GOOGLE-CLIENT-ID",
+        "clientSecret": "GOOGLE-CLIENT-SECRET"
       }
     },
     "db": {
-      "url": "http://localhost:27017",
+      "url": "localhost",
       "name": "sgg"
     }
   }

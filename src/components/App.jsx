@@ -43,7 +43,7 @@ function App(props) {
     <AuthContext.Provider value={{ state, setState: setTokens}}>
       <Router history={history}>
         <ButtonAppBar />
-        <Container className={clsx(classes.container, 'MuiPaper-elevation1')}>
+        <Container component="main" className={clsx(classes.container, 'MuiPaper-elevation1')}>
           <Switch>
             <Route exact path="/" component={Home} />
             <Route path="/login" component={Login} />

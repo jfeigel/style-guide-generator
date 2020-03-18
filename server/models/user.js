@@ -1,50 +1,88 @@
 const bcrypt = require('bcryptjs');
-const db = require('../helpers/db');
+const { model, Schema } = require('mongoose');
+const merge = require('deepmerge');
+const _ = require('lodash');
+
+const base = {
+  providers: {
+    google: null,
+    github: null
+  },
+  email: null,
+  password: null,
+  firstName: null,
+  lastName: null,
+  displayName: null
+};
+
+const UserSchema = new Schema({
+  providers: {
+    google: String,
+    github: String
+  },
+  email: String,
+  password: String,
+  firstName: String,
+  lastName: String,
+  displayName: String
+});
+const UserModel = model('User', UserSchema);
 
 module.exports = {
-  get: get,
-  authenticate: authenticate,
-  generate: generate,
   create: create,
-  save: save,
+  getById: getById,
+  getByEmail: getByEmail,
+  getByProviderId: getByProviderId,
+  authenticate: authenticate,
   clean: clean
+};
+async function create(user) {
+  if (user.password) {
+    user.password = encryptPassword(user.password);
+  }
+
+  const condition = {};
+  condition.email = user.email;
+
+  // Remove extra props from mongoose document
+  const existingUser = (await UserModel.findOne(condition).exec()).toObject();
+
+  // Only take the base props
+  const newUser = merge(_.pick(existingUser || base, _.keys(base)), user);
+
+  // Add back MongoDB props if updating an existing user
+  if (existingUser && existingUser._id) {
+    newUser._id = existingUser._id;
+    newUser.__v = existingUser.__v;
+  }
+
+  return await UserModel.replaceOne(condition, newUser, {
+    upsert: true
+  }).exec();
+}
+async function getById(id) {
+  return await UserModel.findById(id).exec();
 }
 
-async function get(id) {
-  const user = await db.getDocument(id, 'users');
-  return clean(user);
+async function getByEmail(username) {
+  return await UserModel.findOne({ username }).exec();
+}
+
+async function getByProviderId(provider, id) {
+  const condition = {};
+  condition[`providers.${provider}`] = id;
+  return await UserModel.findOne(condition).exec();
 }
 
 async function authenticate(id, password) {
   const user = await get(id);
   if (!user) return { message: 'Incorrect username' };
-  if (!comparePassword(password, user.password)) return { message: 'Incorrect password' };
+  if (!comparePassword(password, user.password))
+    return { message: 'Incorrect password' };
   return {
     message: 'Success',
     user: clean(user)
   };
-}
-
-function generate(id) {
-  return {
-    _id: id,
-    username: '',
-    password: '',
-    createdAt: new Date()
-  };
-}
-
-async function create(data) {
-  data.password = encryptPassword(data.password);
-  const userBase = generate(data.id);
-  const userFull = Object.assign(userBase, data);
-  const user = await db.insertDocument(userFull, 'users');
-  return clean(user);
-}
-
-async function save(user) {
-  const confirmation = await db.upsertDocument({_id: user._id}, user, 'users');
-  return clean(confirmation);
 }
 
 function clean(user) {

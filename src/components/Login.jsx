@@ -1,87 +1,64 @@
 import React, { useState } from 'react';
-import { Link as RouterLink, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import {
   Button,
-  Checkbox,
+  Container,
   Divider,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
+  Grid,
   IconButton,
   InputAdornment,
-  Paper,
-  TextField,
-  Typography
+  TextField
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import GitHubIcon from '@material-ui/icons/GitHub';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
 import MuiAlert from '@material-ui/lab/Alert';
 
 import axios from 'axios';
 
+import Logo from './Logo';
+import GoogleButton from './GoogleButton';
+import GitHubButton from './GitHubButton';
 import { useAuth } from '../contexts';
-
-const gitHubColors = {
-  primary: '#24292e',
-  dark: '#000004',
-  light: '#4c5157'
-};
 
 const useStyles = makeStyles(theme => ({
   root: {
-    height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginTop: theme.spacing(8)
   },
-  formContainer: {
-    width: '100%',
-    maxWidth: 600,
-    padding: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-    '& > button': {
-      marginTop: theme.spacing(2)
-    }
+  social: {
+    padding: theme.spacing(4, 0, 1),
+    margin: 0
   },
   form: {
-    display: 'flex',
-    flexDirection: 'column',
-    '& > *:not(button)': {
-      margin: theme.spacing(1, 0)
-    },
-    '& button[type="submit"]': {
-      alignSelf: 'flex-end',
-      marginTop: theme.spacing(1.5)
+    width: '100%'
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2)
+  },
+  dividerContainer: {
+    width: '100%',
+    position: 'relative',
+    '& > span': {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      backgroundColor: '#fff',
+      padding: theme.spacing(0, 1.5),
+      color: theme.palette.text.hint
     }
   },
   divider: {
-    marginTop: theme.spacing(4),
-    marginBottom: theme.spacing(4)
-  },
-  enterprise: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    '& fieldset': {
-      marginBottom: theme.spacing(0.5)
-    }
-  },
-  gitHubButton: {
-    color: theme.palette.getContrastText(gitHubColors.primary),
-    backgroundColor: gitHubColors.primary,
-    '&:hover': {
-      backgroundColor: gitHubColors.dark
-    }
+    margin: theme.spacing(2, 0),
+    width: '100%'
   }
 }));
 
 function Login() {
   const classes = useStyles();
   const [state, setState] = useState({
-    enterprise: false,
     showPassword: false,
     isLoggedIn: false,
     error: { value: false, message: null },
@@ -134,22 +111,41 @@ function Login() {
   }
 
   return (
-    <div className={classes.root}>
-      <Paper className={classes.formContainer} variant="outlined">
-        <Typography color="textSecondary" gutterBottom>
-          Login
-        </Typography>
+    <Container maxWidth="xs">
+      <div className={classes.root}>
         {state.isError && (
           <MuiAlert variant="filled" elevation={1} severity="error">
             An Error Occurred!
           </MuiAlert>
         )}
+        <Logo />
+        <Grid className={classes.social} container spacing={2}>
+          <Grid item md={6}>
+            <GoogleButton
+              text="Sign in"
+              href="http://localhost:5000/auth/google"
+            />
+          </Grid>
+          <Grid item md={6}>
+            <GitHubButton
+              text="Sign in"
+              href="http://localhost:5000/auth/github"
+            />
+          </Grid>
+        </Grid>
+        <div className={classes.dividerContainer}>
+          <Divider className={classes.divider} />
+          <span>OR</span>
+        </div>
         <form className={classes.form} noValidate onSubmit={handleLogin}>
           <TextField
             id="username"
             label="Username"
             type="username"
             value={state.username}
+            variant="outlined"
+            fullWidth
+            margin="normal"
             onChange={handleChange('username', 'value')}
           />
           <TextField
@@ -157,6 +153,9 @@ function Login() {
             label="Password"
             type={state.showPassword ? 'text' : 'password'}
             value={state.password}
+            variant="outlined"
+            fullWidth
+            margin="normal"
             onChange={handleChange('password', 'value')}
             InputProps={{
               endAdornment: (
@@ -171,48 +170,18 @@ function Login() {
               )
             }}
           />
-          <Button variant="contained" color="primary" type="submit">
+          <Button
+            className={classes.submit}
+            variant="contained"
+            color="primary"
+            fullWidth
+            type="submit"
+          >
             Login
           </Button>
         </form>
-        <Divider className={classes.divider} />
-        <div className={classes.enterprise}>
-          <FormControl component="fieldset">
-            <FormGroup aria-label="enterprise" row>
-              <FormControlLabel
-                value="enterprise"
-                control={
-                  <Checkbox
-                    checked={state.enterprise}
-                    onChange={handleChange('enterprise', 'checked')}
-                    value="enterprise"
-                    color="secondary"
-                  />
-                }
-                label="Enterprise"
-              />
-            </FormGroup>
-          </FormControl>
-          <TextField
-            id="enterpriseUrl"
-            label="Enterprise URL"
-            required={state.enterprise}
-            disabled={!state.enterprise}
-            helperText={state.enterprise ? '*Required' : ' '}
-          />
-        </div>
-        <Button
-          className={classes.gitHubButton}
-          variant="contained"
-          color="primary"
-          startIcon={<GitHubIcon />}
-          component={RouterLink}
-          to="/auth/github"
-        >
-          Log in with GitHub
-        </Button>
-      </Paper>
-    </div>
+      </div>
+    </Container>
   );
 }
 

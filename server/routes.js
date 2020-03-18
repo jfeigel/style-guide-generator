@@ -47,8 +47,25 @@ router.get('/auth/github', passport.authenticate('github'));
 router.get(
   '/auth/github/callback',
   passport.authenticate('github', {
-    successRedirect: '/github/success',
-    failureRedirect: '/login'
+    successRedirect: 'http://localhost:3000/github/success',
+    failureRedirect: 'http://localhost:3000/login'
+  })
+);
+
+router.get(
+  '/auth/google',
+  passport.authenticate('google', {
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/userinfo.email'
+    ]
+  })
+);
+router.get(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    successRedirect: 'http://localhost:3000/google/success',
+    failureRedirect: 'http://localhost:3000/login'
   })
 );
 

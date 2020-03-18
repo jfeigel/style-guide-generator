@@ -1,6 +1,7 @@
 const config = require('../config.json');
+const logger = require('../logger');
 
-const MongoClient = require('mongodb').MongoClient;
+const mongoose = require('mongoose');
 
 const url = config.site.db.url;
 const dbName = config.site.db.name;
@@ -10,6 +11,8 @@ const mongoOptions = {
   useUnifiedTopology: true
 };
 
+let connection;
+
 function MongoDBError(message) {
   this.name = 'MongoDBError';
   this.message = message || '';
@@ -17,7 +20,10 @@ function MongoDBError(message) {
 MongoDBError.prototype = Error.prototype;
 
 module.exports = {
+  connect: connect,
+  disconnect: disconnect,
   getDocument: getDocument,
+  findOrCreate: findOrCreate,
   findDocumentsSimple: findDocumentsSimple,
   findDocumentsFull: findDocumentsFull,
   insertDocument: insertDocument,
@@ -27,28 +33,49 @@ module.exports = {
   deleteDocument: deleteDocument
 };
 
+async function connect() {
+  try {
+    await mongoose.connect(`mongodb://${url}/${dbName}`, mongoOptions);
+    connection = mongoose.connection;
+    logger.info(`DB: Connect to [${dbName}] succeeded`);
+    return true;
+  } catch (err) {
+    throw new MongoDBError(`DB: Connect to [${dbName}] failed`);
+  }
+}
+
+async function disconnect() {
+  try {
+    return await connection.close();
+  } catch (err) {
+    throw new MongoDBError(`DB: Disconnect from [${dbName}] failed`);
+  }
+}
+
 async function getDocument(id, collection) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    const doc = await db.collection(collection).findOne({ _id: id });
-    client.close();
-    return doc;
+    return await connection.collection(collection).findOne({ _id: id });
   } catch (err) {
     throw new MongoDBError(`DB: Get of [${id}] failed`);
   }
 }
 
+async function findOrCreate(query, collection) {
+  try {
+    return await connection
+      .collection(collection)
+      .findOneAndUpdate(query, { $set: query }, { upsert: true });
+  } catch (err) {
+    throw new MongoDBError(`DB: Find or Create of [${query}] failed`);
+  }
+}
+
 async function findDocumentsSimple(query, collection) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    const doc = await db
+    return await connection
       .collection(collection)
       .find(query)
       .toArray();
-    client.close();
-    return doc;
   } catch (err) {
     throw new MongoDBError(
       `DB: Find (Simple) of [${JSON.stringify(query)}] failed`
@@ -65,17 +92,13 @@ async function findDocumentsFull(
   collection
 ) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    const doc = await db
+    return await connection
       .collection(collection)
       .find(query, projection)
       .sort(sort)
       .skip(skip)
       .limit(limit)
       .toArray();
-    client.close();
-    return doc;
   } catch (err) {
     throw new MongoDBError(
       `DB: Find (Full) of [${JSON.stringify(query)}] failed`
@@ -85,11 +108,7 @@ async function findDocumentsFull(
 
 async function insertDocument(document, collection) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    const doc = await db.collection(collection).insertOne(document);
-    client.close();
-    return doc;
+    return await connection.collection(collection).insertOne(document);
   } catch (err) {
     throw new MongoDBError(`DB: Insert of [${document._id}] failed`);
   }
@@ -97,12 +116,9 @@ async function insertDocument(document, collection) {
 
 async function updateDocument(query, document, collection) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    const doc = await db
+    const doc = await connection
       .collection(collection)
       .findOneAndUpdate(query, document, { returnOriginal: false });
-    client.close();
     return doc.value;
   } catch (err) {
     throw new MongoDBError(`DB: Insert of [${document._id}] failed`);
@@ -111,10 +127,9 @@ async function updateDocument(query, document, collection) {
 
 async function replaceDocument(query, document, collection) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    const doc = await db.collection(collection).replaceOne(query, document);
-    client.close();
+    const doc = await connection
+      .collection(collection)
+      .replaceOne(query, document);
     return doc.ops[0];
   } catch (err) {
     throw new MongoDBError(`DB: Replace of [${document._id}] failed`);
@@ -123,12 +138,9 @@ async function replaceDocument(query, document, collection) {
 
 async function upsertDocument(query, document, collection) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    const doc = await db
+    const doc = await connection
       .collection(collection)
       .replaceOne(query, document, { upsert: true });
-    client.close();
     return doc.ops[0];
   } catch (err) {
     throw new MongoDBError(`DB: Upsert of [${document._id}] failed`);
@@ -137,10 +149,7 @@ async function upsertDocument(query, document, collection) {
 
 async function deleteDocument(query, collection) {
   try {
-    const client = await MongoClient.connect(url, mongoOptions);
-    const db = client.db(dbName);
-    await db.collection(collection).deleteOne(query);
-    client.close();
+    await connection.collection(collection).deleteOne(query);
     return true;
   } catch (err) {
     throw new MongoDBError(`DB: Delete of [${JSON.stringify(query)}] failed`);

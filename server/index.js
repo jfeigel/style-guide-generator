@@ -10,6 +10,8 @@ const redis = require('koa-redis');
 const bodyParser = require('koa-bodyparser');
 const passport = require('koa-passport');
 
+const db = require('./helpers/db');
+
 const app = new Koa();
 app.use(
   cors({
@@ -67,10 +69,25 @@ logger.info(
 );
 app.listen(config.site.port);
 
+(async () => {
+  await db.connect();
+})().catch(err => {
+  logger.error(err.message);
+});
+
 app.on('error', (err, ctx) => {
   logger.error(`${ctx && ctx.status && `${ctx.status} | `}${err}`);
 });
 
-process.on('SIGINT', function exit() {
-  process.exit();
+process.on('SIGINT', async function exit() {
+  logger.info('SIGINT signal received.');
+  try {
+    await db.disconnect();
+    logger.info('Disconnected from MongoDB');
+  } catch (err) {
+    logger.error(err.message);
+  } finally {
+    logger.info('Process exiting');
+    process.exit();
+  }
 });

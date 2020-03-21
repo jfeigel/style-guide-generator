@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
     width: theme.spacing(10),
     height: theme.spacing(10),
-    backgroundColor: '#21ce99',
+    backgroundColor: theme.palette.primary.main,
     color: '#fff',
     borderRadius: '50%',
     '& > svg': {
@@ -20,6 +20,11 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+/**
+ * Logo Component
+ *
+ * @component
+ */
 function Logo(props) {
   const classes = useStyles();
 

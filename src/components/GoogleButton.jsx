@@ -1,5 +1,5 @@
 import React from 'react';
-
+import PropTypes from 'prop-types';
 import { Button, SvgIcon } from '@material-ui/core';
 import { createMuiTheme, makeStyles } from '@material-ui/core/styles';
 
@@ -44,6 +44,11 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
+/**
+ * Google Button Component
+ *
+ * @component
+ */
 function GoogleButton(props) {
   const classes = useStyles();
 
@@ -56,5 +61,10 @@ function GoogleButton(props) {
     </Button>
   );
 }
+
+GoogleButton.propTypes = {
+  href: PropTypes.string.isRequired,
+  text: PropTypes.string.isRequired
+};
 
 export default GoogleButton;

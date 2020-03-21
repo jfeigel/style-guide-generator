@@ -1,5 +1,5 @@
 import React from 'react';
-
+import PropTypes from 'prop-types';
 import { Button, SvgIcon } from '@material-ui/core';
 import { createMuiTheme, makeStyles } from '@material-ui/core/styles';
 
@@ -45,6 +45,11 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
+/**
+ * GitHub Button Component
+ *
+ * @component
+ */
 function GitHubButton(props) {
   const classes = useStyles();
 
@@ -57,5 +62,10 @@ function GitHubButton(props) {
     </Button>
   );
 }
+
+GitHubButton.propTypes = {
+  href: PropTypes.string.isRequired,
+  text: PropTypes.string.isRequired
+};
 
 export default GitHubButton;

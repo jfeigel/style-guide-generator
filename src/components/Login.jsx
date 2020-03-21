@@ -1,17 +1,24 @@
+/**
+ * @module LoginComponent
+ */
 import React, { useState } from 'react';
 import { Redirect } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import {
   Button,
+  Collapse,
   Container,
   Divider,
   Grid,
   IconButton,
   InputAdornment,
+  Link,
+  Snackbar,
   TextField
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
-import MuiAlert from '@material-ui/lab/Alert';
+import CloseIcon from '@material-ui/icons/Close';
 
 import axios from 'axios';
 
@@ -19,6 +26,7 @@ import Logo from './Logo';
 import GoogleButton from './GoogleButton';
 import GitHubButton from './GitHubButton';
 import { useAuth } from '../contexts';
+import useForm from '../hooks/useForm';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -31,11 +39,8 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(4, 0, 1),
     margin: 0
   },
-  form: {
-    width: '100%'
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2)
+  gridContainer: {
+    paddingTop: theme.spacing(2)
   },
   dividerContainer: {
     width: '100%',
@@ -53,82 +58,191 @@ const useStyles = makeStyles(theme => ({
   divider: {
     margin: theme.spacing(2, 0),
     width: '100%'
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2)
   }
 }));
 
-function Login() {
+/**
+ * Login Component
+ *
+ * @component
+ */
+function Login(props) {
   const classes = useStyles();
-  const [state, setState] = useState({
-    showPassword: false,
-    isLoggedIn: false,
-    error: { value: false, message: null },
-    username: '',
-    password: ''
-  });
-  const { setAuthTokens } = useAuth();
+  const { loggedInUser, setLoggedInUser } = useAuth();
+
+  const [showPasswordState, setShowPasswordState] = useState(false);
+  const [showLoginState, setShowLoginState] = useState(true);
+  const [isLoggedInState, setIsLoggedInState] = useState(!!loggedInUser);
+  const [errorState, setErrorState] = useState(null);
+
+  const stateSchema = {
+    firstName: { value: '', error: '' },
+    lastName: { value: '', error: '' },
+    email: { value: '', error: '' },
+    password: { value: '', error: '' },
+    passwordConfirm: { value: '', error: '' }
+  };
+
+  const validationStateSchema = {
+    firstName: {
+      required: !showLoginState,
+      validator: {
+        regEx: /^[a-zA-Z\s\-']+$/,
+        error: 'Invalid First Name'
+      }
+    },
+    lastName: {
+      required: !showLoginState,
+      validator: {
+        regEx: /^[a-zA-Z\s\-']+$/,
+        error: 'Invalid Last Name'
+      }
+    },
+    email: {
+      required: true,
+      validator: {
+        regEx: /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/,
+        error: 'Invalid Email format'
+      }
+    },
+    password: {
+      required: true,
+      validator: {
+        regEx: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/,
+        error:
+          'Password must be at least 8 characters, contain 1 uppercase and 1 lowercase letter, and 1 number'
+      }
+    },
+    passwordConfirm: {
+      required: !showLoginState,
+      validator: {
+        match: 'password',
+        error: 'Passwords do not match'
+      }
+    }
+  };
+
+  const {
+    state: formState,
+    setState: setFormState,
+    disable,
+    handleOnChange,
+    handleOnSubmit
+  } = useForm(stateSchema, validationStateSchema, onSubmitForm);
 
   const axiosAuth = axios.create({
     baseURL: 'http://localhost:5000/auth/',
-    withCredentials: true
+    withCredentials: true,
+    validateStatus: status => status >= 200
   });
 
-  const handleChange = (field, prop) => event => {
-    setState({ ...state, [field]: event.target[prop] });
-  };
+  /**
+   * Handle toggling a State prop
+   *
+   * @function
+   * @param {string} prop State prop to handle
+   * @returns {Function}
+   */
+  function handleToggleState(prop) {
+    return event => {
+      event.preventDefault();
 
-  const handleClickShowPassword = () => {
-    setState({ ...state, showPassword: !state.showPassword });
-  };
+      switch (prop) {
+        case 'showPassword':
+          setShowPasswordState(!showPasswordState);
+          break;
+        case 'showLogin':
+          setShowLoginState(!showLoginState);
+          setFormState(stateSchema);
+          setShowPasswordState(false);
+          break;
+        default:
+          setErrorState('Invalid state prop found');
+      }
+    };
+  }
 
-  const handleLogin = event => {
+  /**
+   * Handle MouseDown on button
+   *
+   * @function
+   * @param {MouseEvent} event MouseEvent from 'Show Password' button
+   */
+  function handleMouseDownAdornment(event) {
     event.preventDefault();
-    setState({ ...state, error: { value: false, message: null } });
+  }
+
+  /**
+   * Handle form submission
+   *
+   * @function
+   */
+  function onSubmitForm() {
+    setErrorState(null);
+
+    const path = showLoginState ? '/login' : '/register';
+    let data = {
+      email: formState.email.value,
+      password: formState.password.value
+    };
+
+    if (!showLoginState) {
+      data = {
+        ...data,
+        firstName: formState.firstName.value,
+        lastName: formState.lastName.value,
+        displayName: `${formState.firstName.value} ${formState.lastName.value}`
+      };
+    }
 
     axiosAuth
-      .post('/login', {
-        username: state.username,
-        password: state.password
-      })
+      .post(path, data)
       .then(result => {
-        if (result.status === 200) {
-          setAuthTokens(result.data);
-          setState({ ...state, isLoggedIn: true });
+        if (result.status >= 200 && result.status <= 300) {
+          setLoggedInUser(result.data);
+          setIsLoggedInState(true);
         } else {
-          setError(result.data);
+          setErrorState(result.data);
         }
       })
-      .catch(e => {
-        setError(e.message);
+      .catch(err => {
+        setErrorState(err.message);
       });
-  };
+  }
 
-  const setError = msg => {
-    setState({ ...state, error: { value: true, message: msg } });
-  };
+  /**
+   * Handle closing the snackbar
+   *
+   * @function
+   */
+  function handleClose() {
+    setErrorState(null);
+  }
 
-  if (state.isLoggedIn) {
-    return <Redirect to="/" />;
+  const referrer =
+    (props.location.state && props.location.state.referrer) || '/account';
+
+  if (isLoggedInState) {
+    return <Redirect to={referrer} />;
   }
 
   return (
     <Container maxWidth="xs">
       <div className={classes.root}>
-        {state.isError && (
-          <MuiAlert variant="filled" elevation={1} severity="error">
-            An Error Occurred!
-          </MuiAlert>
-        )}
         <Logo />
         <Grid className={classes.social} container spacing={2}>
           <Grid item md={6}>
             <GoogleButton
-              text="Sign in"
+              text={showLoginState ? 'Sign in' : 'Sign up'}
               href="http://localhost:5000/auth/google"
             />
           </Grid>
           <Grid item md={6}>
             <GitHubButton
-              text="Sign in"
+              text={showLoginState ? 'Sign in' : 'Sign up'}
               href="http://localhost:5000/auth/github"
             />
           </Grid>
@@ -137,52 +251,175 @@ function Login() {
           <Divider className={classes.divider} />
           <span>OR</span>
         </div>
-        <form className={classes.form} noValidate onSubmit={handleLogin}>
-          <TextField
-            id="username"
-            label="Username"
-            type="username"
-            value={state.username}
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            onChange={handleChange('username', 'value')}
-          />
-          <TextField
-            id="password"
-            label="Password"
-            type={state.showPassword ? 'text' : 'password'}
-            value={state.password}
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            onChange={handleChange('password', 'value')}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                  >
-                    {state.showPassword ? <Visibility /> : <VisibilityOff />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
+        <form className={classes.form} noValidate onSubmit={handleOnSubmit}>
+          <Collapse in={!showLoginState}>
+            <Grid container spacing={2} className={classes.gridContainer}>
+              <Grid item sm={6}>
+                <TextField
+                  autoComplete="fname"
+                  id="firstName"
+                  name="firstName"
+                  label="First Name"
+                  type="text"
+                  value={formState.firstName.value}
+                  variant="outlined"
+                  fullWidth
+                  margin="none"
+                  onChange={handleOnChange}
+                  required={!showLoginState}
+                  error={!!formState.firstName.error}
+                  helperText={formState.firstName.error}
+                />
+              </Grid>
+              <Grid item sm={6}>
+                <TextField
+                  autoComplete="lname"
+                  id="lastName"
+                  name="lastName"
+                  label="Last Name"
+                  type="text"
+                  value={formState.lastName.value}
+                  variant="outlined"
+                  fullWidth
+                  margin="none"
+                  onChange={handleOnChange}
+                  required={!showLoginState}
+                  error={!!formState.lastName.error}
+                  helperText={formState.lastName.error}
+                />
+              </Grid>
+            </Grid>
+          </Collapse>
+          <Grid container spacing={2} className={classes.gridContainer}>
+            <Grid item xs={12}>
+              <TextField
+                autoFocus
+                autoComplete="email"
+                id="email"
+                name="email"
+                label="Email Address"
+                type="email"
+                value={formState.email.value}
+                variant="outlined"
+                fullWidth
+                margin="none"
+                onChange={handleOnChange}
+                required
+                error={!!formState.email.error}
+                helperText={formState.email.error}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                autoComplete="current-password"
+                id="password"
+                name="password"
+                label="Password"
+                type={showPasswordState ? 'text' : 'password'}
+                value={formState.password.value}
+                variant="outlined"
+                fullWidth
+                margin="none"
+                onChange={handleOnChange}
+                required
+                error={!!formState.password.error}
+                helperText={formState.password.error}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        tabIndex="-1"
+                        onClick={handleToggleState('showPassword')}
+                        onMouseDown={handleMouseDownAdornment}
+                      >
+                        {showPasswordState ? <Visibility /> : <VisibilityOff />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
+          </Grid>
+          <Collapse in={!showLoginState}>
+            <Grid container spacing={2} className={classes.gridContainer}>
+              <Grid item xs={12}>
+                <TextField
+                  id="passwordConfirm"
+                  name="passwordConfirm"
+                  label="Confirm Password"
+                  type={showPasswordState ? 'text' : 'password'}
+                  value={formState.passwordConfirm.value}
+                  variant="outlined"
+                  fullWidth
+                  margin="none"
+                  onChange={handleOnChange}
+                  required={!showLoginState}
+                  error={!!formState.passwordConfirm.error}
+                  helperText={formState.passwordConfirm.error}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          tabIndex="-1"
+                          onClick={handleToggleState('showPassword')}
+                          onMouseDown={handleMouseDownAdornment}
+                        >
+                          {showPasswordState ? (
+                            <Visibility />
+                          ) : (
+                            <VisibilityOff />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </Collapse>
           <Button
             className={classes.submit}
             variant="contained"
             color="primary"
             fullWidth
             type="submit"
+            disabled={disable}
           >
-            Login
+            {showLoginState ? 'Login' : 'Sign Up'}
           </Button>
         </form>
+        <Grid container justify="flex-end">
+          <Grid item>
+            <Link href="#" onClick={handleToggleState('showLogin')}>
+              {showLoginState
+                ? "Don't have an account? Sign up"
+                : 'Already have an account? Sign in'}
+            </Link>
+          </Grid>
+        </Grid>
       </div>
+      <Snackbar
+        open={!!errorState}
+        message={errorState}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleClose}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      />
     </Container>
   );
 }
+
+Login.propTypes = {
+  location: PropTypes.object.isRequired
+};
 
 export default Login;

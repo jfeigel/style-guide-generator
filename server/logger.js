@@ -1,14 +1,22 @@
-const Winston = require('winston');
+/**
+ * @module logger
+ * @category Backend
+ */
+import {
+  createLogger,
+  format as _format,
+  transports as _transports
+} from 'winston';
 
-module.exports = Winston.createLogger({
-  format: Winston.format.combine(
-    Winston.format.colorize(),
-    Winston.format.splat(),
-    Winston.format.simple()
+export default createLogger({
+  format: _format.combine(
+    _format.colorize(),
+    _format.splat(),
+    _format.simple()
   ),
   transports: [
-    new Winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new Winston.transports.File({ filename: 'combined.log', level: 'silly' }),
-    new Winston.transports.Console({ level: process.env.LOG_LEVEL || 'info' })
+    new _transports.File({ filename: 'error.log', level: 'error' }),
+    new _transports.File({ filename: 'combined.log', level: 'silly' }),
+    new _transports.Console({ level: process.env.LOG_LEVEL || 'info' })
   ]
 });

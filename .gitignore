@@ -13,6 +13,10 @@
 
 # database
 /data
+dump.rdb
+
+# docs
+/docs
 
 # misc
 .DS_Store
@@ -20,7 +24,8 @@
 .env.development.local
 .env.test.local
 .env.production.local
+/.vscode
 
 *.log
 
-**/config.json
+**/config.js

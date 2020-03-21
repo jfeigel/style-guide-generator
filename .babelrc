@@ -1,0 +1,19 @@
+{
+  "sourceMaps": "both",
+  "plugins": ["transform-runtime", "transform-object-rest-spread"],
+  "presets": [
+    [
+      "env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ]
+  ],
+  "env": {
+    "production": {
+      "plugins": ["source-map-support"]
+    }
+  }
+}

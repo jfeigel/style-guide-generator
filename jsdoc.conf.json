@@ -1,0 +1,37 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  },
+  "source": {
+    "include": ["./src", "./server"],
+    "includePattern": "\\.(js|jsx)$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "plugins": ["plugins/markdown", "node_modules/better-docs/category"],
+  "opts": {
+    "encoding": "utf8",
+    "destination": "docs/",
+    "recurse": true,
+    "readme": "README.md",
+    "template": "node_modules/better-docs"
+  },
+  "templates": {
+    "default": {
+      "staticFiles": {
+        "include": ["./src/images/logo.png"]
+      }
+    },
+    "better-docs": {
+      "title": "Style Guide Generator Documentation",
+      "name": "Style Guide Generator Documentation",
+      "logo": "logo.png",
+      "navigation": [
+        {
+          "label": "GitHub",
+          "href": "https://github.com/jfeigel/style-guide-generator"
+        }
+      ]
+    }
+  }
+}

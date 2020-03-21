@@ -7,16 +7,17 @@
     "node": true
   },
   "extends": [
-    "airbnb",
     "eslint:recommended",
+    "plugin:jsdoc/recommended",
     "plugin:prettier/recommended",
-    "plugin:react/recommended"
+    "plugin:react/recommended",
+    "react-app"
   ],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
     },
-    "ecmaVersion": 8,
+    "ecmaVersion": 9,
     "sourceType": "module"
   },
   "settings": {
@@ -31,7 +32,10 @@
     "func-names": 2,
     "generator-star-spacing": [2, "after"],
     "guard-for-in": 2,
-    "indent": [2, 2],
+    "indent": [2, 2, { "SwitchCase": 1 }],
+    "jsdoc/check-tag-names": [1, { "definedTags": ["category", "component"] }],
+    "jsdoc/require-param": [1, { "exemptedBy": ["component"] }],
+    "jsdoc/require-returns": [1, { "exemptedBy": ["component"] }],
     "keyword-spacing": 2,
     "max-nested-callbacks": [2, 3],
     "new-cap": 2,

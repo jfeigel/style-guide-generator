@@ -7,7 +7,15 @@ import { Container } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { createBrowserHistory } from 'history';
 
-import { Account, ButtonAppBar, Error, Home, Login, PrivateRoute } from '.';
+import {
+  Account,
+  ButtonAppBar,
+  Error,
+  Home,
+  Login,
+  PrivateRoute,
+  Success
+} from '.';
 import { AuthContext } from '../contexts';
 
 import './App.css';
@@ -28,25 +36,39 @@ history.listen(location => {
   ReactGA.pageview(location.pathname);
 });
 
-function App(props) {
-  const existingTokens = JSON.parse(localStorage.getItem('tokens'));
-  const [state, setState] = useState(existingTokens);
+/**
+ * Main App Component
+ *
+ * @component
+ */
+function App() {
+  const existingUser =
+    (localStorage.getItem('user') &&
+      JSON.parse(localStorage.getItem('user'))) ||
+    null;
+  const [loggedInUser, setLoggedInUser] = useState(existingUser);
 
   const classes = useStyles();
 
-  const setTokens = data => {
-    localStorage.setItem('tokens', JSON.stringify(data));
-    setState(data);
+  const setUser = data => {
+    data
+      ? localStorage.setItem('user', JSON.stringify(data))
+      : localStorage.removeItem('user');
+    setLoggedInUser(data);
   };
 
   return (
-    <AuthContext.Provider value={{ state, setState: setTokens}}>
+    <AuthContext.Provider value={{ loggedInUser, setLoggedInUser: setUser }}>
       <Router history={history}>
         <ButtonAppBar />
-        <Container component="main" className={clsx(classes.container, 'MuiPaper-elevation1')}>
+        <Container
+          component="main"
+          className={clsx(classes.container, 'MuiPaper-elevation1')}
+        >
           <Switch>
             <Route exact path="/" component={Home} />
             <Route path="/login" component={Login} />
+            <Route path="/success/:provider" component={Success} />
             <PrivateRoute path="/account" component={Account} />
             <Route path="*" component={Error} />
           </Switch>

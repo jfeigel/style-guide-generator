@@ -8,6 +8,11 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
+/**
+ * Home Component
+ *
+ * @component
+ */
 function Home() {
   const classes = useStyles();
 

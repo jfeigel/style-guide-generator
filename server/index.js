@@ -1,31 +1,33 @@
-const config = require('./config');
-const logger = require('./logger');
+/**
+ * @module Server
+ * @category Backend
+ * @requires logger
+ * @requires db
+ * @requires AuthModel
+ * @requires Router
+ */
+import config from './config';
+import logger from './logger';
 
-const Koa = require('koa');
-const cors = require('@koa/cors');
-const serve = require('koa-static');
+import Koa from 'koa';
+import cors from '@koa/cors';
+import serve from 'koa-static';
 
-const session = require('koa-generic-session');
-const redis = require('koa-redis');
-const bodyParser = require('koa-bodyparser');
-const passport = require('koa-passport');
+import session from 'koa-generic-session';
+import redis from 'koa-redis';
+import bodyParser from 'koa-bodyparser';
+import passport from 'koa-passport';
 
-const db = require('./helpers/db');
+import * as db from './helpers/db';
+import authModel from './models/auth';
+import router from './routes';
 
-const app = new Koa();
+export const app = new Koa();
 app.use(
   cors({
     credentials: true
   })
 );
-
-module.exports = {
-  app: app,
-  logger: logger,
-  passport: passport
-};
-
-require('./models/auth');
 
 app.proxy = true;
 
@@ -48,6 +50,9 @@ app.use(bodyParser());
 app.use(passport.initialize());
 app.use(passport.session());
 
+authModel(passport);
+router(app, passport);
+
 if (process.env.NODE_ENV === 'production') {
   app.use(serve('./dist'));
 }
@@ -61,8 +66,6 @@ app.use(async (ctx, next) => {
     ctx.app.emit('error', err, ctx);
   }
 });
-
-require('./routes');
 
 logger.info(
   `${config.site.name} is now listening on port ${config.site.port}.`

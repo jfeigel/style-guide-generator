@@ -1,6 +1,11 @@
 import React from 'react';
 
-function Account(props) {
+/**
+ * Account Component
+ *
+ * @component
+ */
+function Account() {
   return <h2>Account Page</h2>;
 }
 

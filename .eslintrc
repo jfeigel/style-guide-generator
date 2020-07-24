@@ -34,6 +34,7 @@
     "guard-for-in": 2,
     "indent": [2, 2, { "SwitchCase": 1 }],
     "jsdoc/check-tag-names": [1, { "definedTags": ["category", "component"] }],
+    "jsdoc/no-undefined-types": [2, { "definedTypes": ["React"] }],
     "jsdoc/require-param": [1, { "exemptedBy": ["component"] }],
     "jsdoc/require-returns": [1, { "exemptedBy": ["component"] }],
     "keyword-spacing": 2,

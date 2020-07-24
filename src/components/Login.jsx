@@ -144,7 +144,7 @@ function Login(props) {
    *
    * @function
    * @param {string} prop State prop to handle
-   * @returns {Function}
+   * @returns {Function} function to handle state property toggle
    */
   function handleToggleState(prop) {
     return event => {

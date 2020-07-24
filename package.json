@@ -12,9 +12,9 @@
   },
   "license": "gpl-3.0",
   "scripts": {
-    "start": "concurrently --kill-others -p [{name}] -n \"KOA,REACT\" -c \"black.bgWhite.bold,black.bgCyan.bold\" \"yarn run be\" \"yarn run fe\"",
-    "be": "./node_modules/.bin/nodemon server/index.js",
-    "fe": "react-scripts start",
+    "start": "concurrently --kill-others -p [{name}] -n \"KOA,REACT\" -c \"black.bgWhite.bold,black.bgCyan.bold\" \"yarn run server\" \"yarn run web\"",
+    "server": "./node_modules/.bin/nodemon server/index.js",
+    "web": "react-scripts start",
     "mongo": "screen -dmS sgg-mongodb bash -c 'mongod --dbpath=/Users/jfeigel/Projects/style-guide-generator/data'",
     "redis": "screen -dmS sgg-redis redis-server",
     "services": "yarn run mongo && yarn run redis",
